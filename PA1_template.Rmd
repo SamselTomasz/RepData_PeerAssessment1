@@ -7,8 +7,14 @@ output:
 
 
 ## Loading and preprocessing the data
+The repository came with zipped data. First of all, unzip csv file, load it and have a look at it, to be sure the dates and other variables are in the right format.
 
-
+```{r cashe=TRUE}
+unzip("./activity.zip")
+activity <- read.csv("./activity.csv")
+summary(activity)
+str(activity)
+```
 
 ## What is mean total number of steps taken per day?
 
