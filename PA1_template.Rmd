@@ -9,20 +9,39 @@ output:
 ## Loading and preprocessing the data
 The repository came with zipped data. First of all, unzip csv file, load it and have a look at it, to be sure the dates and other variables are in the right format.
 
-```{r cashe=TRUE}
+```{r cashe=TRUE }
 unzip("./activity.zip")
-activity <- read.csv("./activity.csv")
+activity <- read.csv("./activity.csv", colClasses = c("numeric", "Date", "factor"))
 summary(activity)
 str(activity)
 ```
+Everything looks ok, we have number of steps as numeric values, dates represented in date format and interval variable is as factor. This will speed up the rest of computations. There is also 2304 NA's, but we will deal with it later.
+
+
+
 
 ## What is mean total number of steps taken per day?
+Lets calculate the mean number of steps for each day, and save it to new data frame. Plot a histogram to visualize the result. 
+```{r cashe=TRUE}
+stepsMean <- aggregate(steps ~ date, data = activity, sum, na.action = na.omit)
+hist(stepsMean$steps, breaks=50, main="Mean number of steps per day", xlab="Total number of steps", ylab="Number of days")
+
+## calculate the mean and median of the total number of steps taken per day
+meanSteps <- as.character(mean(stepsMean$steps))
+medianSteps <- as.character(median(stepsMean$steps))
+```
+
+The mean of the total number of steps taken per day is **`r meanSteps`**, and median is **`r medianSteps`**.
+
 
 
 
 ## What is the average daily activity pattern?
-
-
+Lets do some computation, shall we? After it's done, plot the result, to see whats the pattern like throughout a day.
+```{r cashe=TRUE}
+dailyPattern <- aggregate(steps ~ interval, data = activity, FUN = mean)
+plot(dailyPattern$interval, dailyPattern$steps, type = "l", xlab = "5-min Interval", ylab = "Average Num of Steps", main = "Average Daily Activity Pattern")
+```
 
 ## Imputing missing values
 
