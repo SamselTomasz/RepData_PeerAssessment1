@@ -63,7 +63,12 @@ Lets do some computation, shall we? After it's done, plot the result, to see wha
 
 ```r
 dailyPattern <- aggregate(steps ~ interval, data = activity, FUN = mean)
-plot(dailyPattern$interval, dailyPattern$steps, type = "l", xlab = "5-min Interval", ylab = "Average Num of Steps", main = "Average Daily Activity Pattern")
+
+## we have to convert intervals to integer, otherwise it will not plot well..
+library(ggplot2)
+dailyPattern$interval <- as.integer(levels(dailyPattern$interval)[dailyPattern$interval])
+ggplot(data=dailyPattern, aes(x=interval, y=steps)) +
+        geom_line()
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
