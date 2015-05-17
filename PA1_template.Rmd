@@ -23,7 +23,7 @@ Everything looks ok, we have number of steps as numeric values, dates represente
 ## What is mean total number of steps taken per day?
 Lets calculate the mean number of steps for each day, and save it to new data frame. Plot a histogram to visualize the result. 
 ```{r cashe=TRUE}
-stepsMean <- aggregate(steps ~ date, data = activity, sum, na.action = na.omit)
+stepsMean <- aggregate(steps ~ date, data = activity, sum, na.rm=TRUE)
 hist(stepsMean$steps, breaks=50, main="Mean number of steps per day", xlab="Total number of steps", ylab="Number of days")
 
 ## calculate the mean and median of the total number of steps taken per day
@@ -51,6 +51,71 @@ ggplot(data=dailyPattern, aes(x=interval, y=steps)) +
 
 ## Imputing missing values
 
+Lets calculate number of missing values.
+```{r cashe=TRUE}
+missingValues <- sum(is.na(activity$steps))
+```
+
+We have **`r missingValues`** missing values in the dataset.
+Lets do something about them. We will create new dataset, a copy of our original activity, and replace missing values of steps with mean number of steps in that time interval.
+
+```{r cashe=TRUE}
+activity2 <- activity
+index <- as.numeric(length(activity2$steps))
+for(i in 1:index){
+        if(is.na(activity2$steps[i])){
+                activity2$steps[i] <-  dailyPattern[activity2[i, 3], 2]
+        }
+}
+```
+
+Calculate again mean and median for updated dataset. Print a histogram for it.
+
+```{r cashe=TRUE}
+stepsMean2 <- aggregate(steps ~ date, data = activity2, sum)
+meanSteps2 <- as.character(mean(stepsMean2$steps))
+medianSteps2 <- as.character(median(stepsMean2$steps))
+hist(stepsMean2$steps, breaks=50, main="Mean number of steps per day, no NAs", xlab="Total number of steps", ylab="Number of days")
+
+```
+
+In original dataset mean was **`r meanSteps`**.
+Without NAs dataset mean is **`r meanSteps2`**.
+
+In original dataset median was **`r medianSteps`**.
+Without NAs dataset median is **`r medianSteps2`**.
+
+As You can see, the median value has shifted up. But the impact on predictions is minimal.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+To answear this question, we need to divide the dataset into two levels - the weekdays and weekends.
+
+```{r}
+day <- weekdays(activity$date)
+daylevel <- vector()
+for (i in 1:nrow(activity)) {
+    if (day[i] == "Saturday") {
+        daylevel[i] <- "Weekend"
+    } else if (day[i] == "Sunday") {
+        daylevel[i] <- "Weekend"
+    } else {
+        daylevel[i] <- "Weekday"
+    }
+}
+activity$daylevel <- daylevel
+activity$daylevel <- factor(activity$daylevel)
+
+stepsByDay <- aggregate(steps ~ interval + daylevel, data = activity, mean)
+names(stepsByDay) <- c("interval", "daylevel", "steps")
+
+stepsByDay$interval <- as.integer(levels(stepsByDay$interval)[stepsByDay$interval])
+ggplot(stepsByDay, aes(x=interval, y=steps)) + 
+        geom_line(color="violet") + 
+        facet_wrap(~ daylevel, nrow=2, ncol=1) +
+        labs(x="Interval", y="Number of steps") +
+        theme_bw()
+```
+
+As we can see during the weekdays there is a greatest peek, no such thing during weekends. But weekends have higher level of activities (peaks reaching above 100). This can be related to work routine and more active live style in a free time. 
